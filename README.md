@@ -28,7 +28,7 @@ import (
 )
 
 func main() {
-    currency, ok := iso4217.ByCode("USD")
+    currency, ok := iso4217.FindByAlpha("USD")
     if ok {
         fmt.Println(currency.Name) // United States dollar
         fmt.Println(currency.Numeric) // 840
