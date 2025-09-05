@@ -20,7 +20,7 @@ type ISO4217 struct {
 }
 
 func main() {
-	xmlFile := "src/iso4217-list.xml"
+	xmlFile := "generate/iso4217-list.xml"
 	data, err := os.ReadFile(xmlFile)
 	if err != nil {
 		panic(err)
@@ -37,14 +37,14 @@ func main() {
 	out.WriteString("package iso4217\n\n")
 	out.WriteString("type Currency struct {\n")
 	out.WriteString("\tAlpha      string\n")
-	out.WriteString("\tNumeric    int16\n")
-	out.WriteString("\tMinorUnits int8\n")
+	out.WriteString("\tNumeric    int\n")
+	out.WriteString("\tMinorUnits int\n")
 	out.WriteString("\tName       string\n")
 	out.WriteString("}\n\n")
 
-	out.WriteString("var CurrenciesByAlpha = map[string]Currency{\n")
+	out.WriteString("var currenciesByAlpha3 = map[string]Currency{\n")
 	var numericMap strings.Builder
-	numericMap.WriteString("var CurrenciesByNumeric = map[int16]Currency{\n")
+	numericMap.WriteString("var currenciesByNumeric = map[int]Currency{\n")
 
 	for _, entry := range iso.CcyTbl.CcyNtry {
 		if entry.Ccy == "" || seen[entry.Ccy] {
@@ -52,14 +52,14 @@ func main() {
 		}
 		seen[entry.Ccy] = true
 
-		var numeric int16 = -1
+		var numeric int = -1
 		if n, err := strconv.Atoi(entry.CcyNbr); err == nil {
-			numeric = int16(n)
+			numeric = int(n)
 		}
 
-		var minor int8 = -1
+		var minor int = -1
 		if n, err := strconv.Atoi(entry.CcyMnr); err == nil {
-			minor = int8(n)
+			minor = int(n)
 		}
 
 		line := fmt.Sprintf("{Alpha: \"%s\", Numeric: %d, MinorUnits: %d, Name: %q}", entry.Ccy, numeric, minor, entry.CcyNm)

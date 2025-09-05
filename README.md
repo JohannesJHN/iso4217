@@ -28,11 +28,18 @@ import (
 )
 
 func main() {
-    currency, ok := iso4217.FindByAlpha("USD")
+    currency, ok := iso4217.FindByAlpha3("USD")
     if ok {
         fmt.Println(currency.Name) // United States dollar
         fmt.Println(currency.Numeric) // 840
         fmt.Println(currency.MinorUnits) // 2
+    }
+
+    currency, ok = iso4217.FindByNumeric(978)
+    if ok {
+      fmt.Println(currency.Name) // Euro
+      fmt.Println(currency.Alpha3) // EUR
+      fmt.Println(currency.MinorUnits) // 2
     }
 }
 ```

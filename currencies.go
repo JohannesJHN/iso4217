@@ -2,12 +2,12 @@ package iso4217
 
 type Currency struct {
 	Alpha      string
-	Numeric    int16
-	MinorUnits int8
+	Numeric    int
+	MinorUnits int
 	Name       string
 }
 
-var CurrenciesByAlpha = map[string]Currency{
+var currenciesByAlpha3 = map[string]Currency{
 	"AFN": {Alpha: "AFN", Numeric: 971, MinorUnits: 2, Name: "Afghani"},
 	"EUR": {Alpha: "EUR", Numeric: 978, MinorUnits: 2, Name: "Euro"},
 	"ALL": {Alpha: "ALL", Numeric: 8, MinorUnits: 2, Name: "Lek"},
@@ -189,37 +189,37 @@ var CurrenciesByAlpha = map[string]Currency{
 	"XAG": {Alpha: "XAG", Numeric: 961, MinorUnits: -1, Name: "Silver"},
 }
 
-var CurrenciesByNumeric = map[int16]Currency{
+var currenciesByNumeric = map[int]Currency{
 	971: {Alpha: "AFN", Numeric: 971, MinorUnits: 2, Name: "Afghani"},
 	978: {Alpha: "EUR", Numeric: 978, MinorUnits: 2, Name: "Euro"},
-	8: {Alpha: "ALL", Numeric: 8, MinorUnits: 2, Name: "Lek"},
-	12: {Alpha: "DZD", Numeric: 12, MinorUnits: 2, Name: "Algerian Dinar"},
+	8:   {Alpha: "ALL", Numeric: 8, MinorUnits: 2, Name: "Lek"},
+	12:  {Alpha: "DZD", Numeric: 12, MinorUnits: 2, Name: "Algerian Dinar"},
 	840: {Alpha: "USD", Numeric: 840, MinorUnits: 2, Name: "US Dollar"},
 	973: {Alpha: "AOA", Numeric: 973, MinorUnits: 2, Name: "Kwanza"},
 	951: {Alpha: "XCD", Numeric: 951, MinorUnits: 2, Name: "East Caribbean Dollar"},
 	396: {Alpha: "XAD", Numeric: 396, MinorUnits: 2, Name: "Arab Accounting Dinar"},
-	32: {Alpha: "ARS", Numeric: 32, MinorUnits: 2, Name: "Argentine Peso"},
-	51: {Alpha: "AMD", Numeric: 51, MinorUnits: 2, Name: "Armenian Dram"},
+	32:  {Alpha: "ARS", Numeric: 32, MinorUnits: 2, Name: "Argentine Peso"},
+	51:  {Alpha: "AMD", Numeric: 51, MinorUnits: 2, Name: "Armenian Dram"},
 	533: {Alpha: "AWG", Numeric: 533, MinorUnits: 2, Name: "Aruban Florin"},
-	36: {Alpha: "AUD", Numeric: 36, MinorUnits: 2, Name: "Australian Dollar"},
+	36:  {Alpha: "AUD", Numeric: 36, MinorUnits: 2, Name: "Australian Dollar"},
 	944: {Alpha: "AZN", Numeric: 944, MinorUnits: 2, Name: "Azerbaijan Manat"},
-	44: {Alpha: "BSD", Numeric: 44, MinorUnits: 2, Name: "Bahamian Dollar"},
-	48: {Alpha: "BHD", Numeric: 48, MinorUnits: 3, Name: "Bahraini Dinar"},
-	50: {Alpha: "BDT", Numeric: 50, MinorUnits: 2, Name: "Taka"},
-	52: {Alpha: "BBD", Numeric: 52, MinorUnits: 2, Name: "Barbados Dollar"},
+	44:  {Alpha: "BSD", Numeric: 44, MinorUnits: 2, Name: "Bahamian Dollar"},
+	48:  {Alpha: "BHD", Numeric: 48, MinorUnits: 3, Name: "Bahraini Dinar"},
+	50:  {Alpha: "BDT", Numeric: 50, MinorUnits: 2, Name: "Taka"},
+	52:  {Alpha: "BBD", Numeric: 52, MinorUnits: 2, Name: "Barbados Dollar"},
 	933: {Alpha: "BYN", Numeric: 933, MinorUnits: 2, Name: "Belarusian Ruble"},
-	84: {Alpha: "BZD", Numeric: 84, MinorUnits: 2, Name: "Belize Dollar"},
+	84:  {Alpha: "BZD", Numeric: 84, MinorUnits: 2, Name: "Belize Dollar"},
 	952: {Alpha: "XOF", Numeric: 952, MinorUnits: 0, Name: "CFA Franc BCEAO"},
-	60: {Alpha: "BMD", Numeric: 60, MinorUnits: 2, Name: "Bermudian Dollar"},
+	60:  {Alpha: "BMD", Numeric: 60, MinorUnits: 2, Name: "Bermudian Dollar"},
 	356: {Alpha: "INR", Numeric: 356, MinorUnits: 2, Name: "Indian Rupee"},
-	64: {Alpha: "BTN", Numeric: 64, MinorUnits: 2, Name: "Ngultrum"},
-	68: {Alpha: "BOB", Numeric: 68, MinorUnits: 2, Name: "Boliviano"},
+	64:  {Alpha: "BTN", Numeric: 64, MinorUnits: 2, Name: "Ngultrum"},
+	68:  {Alpha: "BOB", Numeric: 68, MinorUnits: 2, Name: "Boliviano"},
 	984: {Alpha: "BOV", Numeric: 984, MinorUnits: 2, Name: "Mvdol"},
 	977: {Alpha: "BAM", Numeric: 977, MinorUnits: 2, Name: "Convertible Mark"},
-	72: {Alpha: "BWP", Numeric: 72, MinorUnits: 2, Name: "Pula"},
+	72:  {Alpha: "BWP", Numeric: 72, MinorUnits: 2, Name: "Pula"},
 	578: {Alpha: "NOK", Numeric: 578, MinorUnits: 2, Name: "Norwegian Krone"},
 	986: {Alpha: "BRL", Numeric: 986, MinorUnits: 2, Name: "Brazilian Real"},
-	96: {Alpha: "BND", Numeric: 96, MinorUnits: 2, Name: "Brunei Dollar"},
+	96:  {Alpha: "BND", Numeric: 96, MinorUnits: 2, Name: "Brunei Dollar"},
 	975: {Alpha: "BGN", Numeric: 975, MinorUnits: 2, Name: "Bulgarian Lev"},
 	108: {Alpha: "BIF", Numeric: 108, MinorUnits: 0, Name: "Burundi Franc"},
 	132: {Alpha: "CVE", Numeric: 132, MinorUnits: 2, Name: "Cabo Verde Escudo"},
@@ -325,7 +325,7 @@ var CurrenciesByNumeric = map[int16]Currency{
 	925: {Alpha: "SLE", Numeric: 925, MinorUnits: 2, Name: "Leone"},
 	702: {Alpha: "SGD", Numeric: 702, MinorUnits: 2, Name: "Singapore Dollar"},
 	994: {Alpha: "XSU", Numeric: 994, MinorUnits: -1, Name: "Sucre"},
-	90: {Alpha: "SBD", Numeric: 90, MinorUnits: 2, Name: "Solomon Islands Dollar"},
+	90:  {Alpha: "SBD", Numeric: 90, MinorUnits: 2, Name: "Solomon Islands Dollar"},
 	706: {Alpha: "SOS", Numeric: 706, MinorUnits: 2, Name: "Somali Shilling"},
 	728: {Alpha: "SSP", Numeric: 728, MinorUnits: 2, Name: "South Sudanese Pound"},
 	144: {Alpha: "LKR", Numeric: 144, MinorUnits: 2, Name: "Sri Lanka Rupee"},
