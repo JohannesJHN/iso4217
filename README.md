@@ -14,7 +14,7 @@ currency data for Go
 ## Installation
 
 ```sh
-go get github.com/yourusername/iso4217
+go get github.com/JohannesJHN/iso4217
 ```
 
 ## Usage
