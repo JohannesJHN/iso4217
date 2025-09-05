@@ -36,7 +36,7 @@ func main() {
 
 	out.WriteString("package iso4217\n\n")
 	out.WriteString("type Currency struct {\n")
-	out.WriteString("\tAlpha      string\n")
+	out.WriteString("\tAlpha3      string\n")
 	out.WriteString("\tNumeric    int\n")
 	out.WriteString("\tMinorUnits int\n")
 	out.WriteString("\tName       string\n")
@@ -62,7 +62,7 @@ func main() {
 			minor = int(n)
 		}
 
-		line := fmt.Sprintf("{Alpha: \"%s\", Numeric: %d, MinorUnits: %d, Name: %q}", entry.Ccy, numeric, minor, entry.CcyNm)
+		line := fmt.Sprintf("{Alpha3: \"%s\", Numeric: %d, MinorUnits: %d, Name: %q}", entry.Ccy, numeric, minor, entry.CcyNm)
 
 		out.WriteString(fmt.Sprintf("\t\"%s\": %s,\n", entry.Ccy, line))
 		numericMap.WriteString(fmt.Sprintf("\t%d: %s,\n", numeric, line))

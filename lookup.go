@@ -2,8 +2,8 @@ package iso4217
 
 // FindByAlpha3 looks up a currency by its three-letter alphabetic code.
 // It returns the Currency and a boolean indicating whether it was found.
-func FindByAlpha3(alpha string) (Currency, bool) {
-	c, ok := currenciesByAlpha3[alpha]
+func FindByAlpha3(alpha3 string) (Currency, bool) {
+	c, ok := currenciesByAlpha3[alpha3]
 	return c, ok
 }
 
