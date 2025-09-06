@@ -41,6 +41,13 @@ func main() {
       fmt.Println(currency.Alpha3) // EUR
       fmt.Println(currency.MinorUnits) // 2
     }
+
+    currency = iso4217.GBP
+    if ok {
+      fmt.Println(currency.Name) // Pound sterling
+      fmt.Println(currency.Numeric) // 826
+      fmt.Println(currency.MinorUnits) // 2
+    }
 }
 ```
 
