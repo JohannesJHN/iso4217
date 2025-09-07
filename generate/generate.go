@@ -16,7 +16,10 @@ type ISO4217 struct {
 			Ccy        string `xml:"Ccy"`
 			CcyNbr     string `xml:"CcyNbr"`
 			CcyMnrUnts string `xml:"CcyMnrUnts"`
-			CcyNm      string `xml:"CcyNm"`
+			CcyNm      struct {
+				Name   string `xml:",chardata"`
+				IsFund string `xml:"IsFund,attr"`
+			} `xml:"CcyNm"`
 		} `xml:"CcyNtry"`
 	} `xml:"CcyTbl"`
 }
@@ -100,24 +103,22 @@ func main() {
 
 	seen := map[string]bool{}
 
-	// per-currency vars
 	fmt.Fprintln(out, "var (")
 	var alpha3map strings.Builder
 	alpha3map.WriteString("var currenciesByAlpha3 = map[string]Currency{\n")
 	var numericMap strings.Builder
 	numericMap.WriteString("var currenciesByNumeric = map[int]Currency{\n")
-	var countryMap = make(map[string]string)          // alpha2 -> currency
-	var currencyCountries = make(map[string][]string) // currency -> []alpha2
+	countryMap := make(map[string]string)          // alpha2 -> currency
+	currencyCountries := make(map[string][]string) // currency -> []alpha2
 
 	for _, c := range data.CcyTbl.Ccies {
 		if c.Ccy == "" || c.CcyNbr == "" {
 			continue
 		}
 
-		// define currency once
+		// define all currencies
 		if !seen[c.Ccy] {
 			seen[c.Ccy] = true
-
 			numeric, _ := strconv.Atoi(c.CcyNbr)
 			minor := -1
 			if c.CcyMnrUnts != "" && c.CcyMnrUnts != "N.A." {
@@ -127,26 +128,24 @@ func main() {
 			}
 
 			fmt.Fprintf(out, "\t%s = Currency{Alpha3: \"%s\", Numeric: %d, MinorUnits: %d, Name: %q}\n",
-				c.Ccy, c.Ccy, numeric, minor, c.CcyNm)
+				c.Ccy, c.Ccy, numeric, minor, c.CcyNm.Name)
 
 			alpha3map.WriteString(fmt.Sprintf("\t\"%s\": %s,\n", c.Ccy, c.Ccy))
 			numericMap.WriteString(fmt.Sprintf("\t%d: %s,\n", numeric, c.Ccy))
 		}
 
-		// link to ISO3166 country
-		if c.CtryNm != "" {
+		// map countries only if not a fund
+		if c.CcyNm.IsFund != "true" && c.CtryNm != "" {
 			if info, ok := iso3166[normalize(c.CtryNm)]; ok {
 				countryMap[info.Alpha2] = c.Ccy
 				currencyCountries[c.Ccy] = append(currencyCountries[c.Ccy], info.Alpha2)
 			} else {
 				fmt.Println("unknown country:", c.CtryNm)
 			}
-
 		}
 	}
 	fmt.Fprintln(out, ")\n")
 
-	// maps
 	alpha3map.WriteString("}\n")
 	fmt.Fprintln(out, alpha3map.String())
 
