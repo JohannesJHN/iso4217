@@ -138,7 +138,10 @@ func main() {
 			if info, ok := iso3166[normalize(c.CtryNm)]; ok {
 				countryMap[info.Alpha2] = c.Ccy
 				currencyCountries[c.Ccy] = append(currencyCountries[c.Ccy], info.Alpha2)
+			} else {
+				fmt.Println("unknown country:", c.CtryNm)
 			}
+
 		}
 	}
 	fmt.Fprintln(out, ")\n")
