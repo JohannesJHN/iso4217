@@ -6,9 +6,11 @@ currency data for Go
 
 ## Features
 
-- Complete ISO 4217 currency list
-- Lookup by code or numeric value
-- Access to currency name and minor units
+- Complete ISO 4217 currency list (both active and inactive currencies)
+- Lookup by alphabetic code, numeric code, or country code
+- Access to currency name, minor units, and withdrawal dates
+- Country-to-currency mappings
+- Separate access to active and inactive currencies
 - Lightweight and dependency-free
 
 ## Installation
@@ -31,36 +33,51 @@ import (
 func main() {
     currency, ok := iso4217.LookupByAlpha3("USD")
     if ok {
-      fmt.Println(currency.Name) // United States dollar
-      fmt.Println(currency.Numeric) // 840
-      fmt.Println(currency.MinorUnits) // 2
-      fmt.Println(currency.Countries()) // [AS BQ IO EC SV GU HT MH FM MP PW PA PR TL TC UM US VG VI]
+        fmt.Println(currency.Name) // United States dollar
+        fmt.Println(currency.Numeric) // 840
+        fmt.Println(currency.MinorUnits) // 2
+        fmt.Println(currency.IsActive()) // true
+        fmt.Println(currency.Countries()) // [AS BQ IO EC SV GU HT MH FM MP PW PA PR TL TC UM US VG VI]
     }
 
     currency, ok = iso4217.LookupByNumeric(978)
     if ok {
-      fmt.Println(currency.Name) // Euro
-      fmt.Println(currency.Alpha3) // EUR
-      fmt.Println(currency.MinorUnits) // 2
-      fmt.Println(currency.Countries()) // [AX AD AT BE HR CY EE FI FR GF TF DE GR GP VA IE IT LV LT LU MT MQ YT MC ME NL PT RE BL MF PM SM SK SI ES]
+        fmt.Println(currency.Name) // Euro
+        fmt.Println(currency.Alpha3) // EUR
+        fmt.Println(currency.MinorUnits) // 2
+        fmt.Println(currency.Countries()) // [AX AD AT BE HR CY EE FI FR GF TF DE GR GP VA IE IT LV LT LU MT MQ YT MC ME NL PT RE BL MF PM SM SK SI ES]
     }
 
     currency, ok = iso4217.LookupByCountry("LI")
     if ok {
-      fmt.Println(currency.Name) // Swiss franc
-      fmt.Println(currency.Alpha3) // CHF
-      fmt.Println(currency.Numeric) // 756
-      fmt.Println(currency.MinorUnits) // 2
-      fmt.Println(currency.Countries()) // [LI CH]
+        fmt.Println(currency.Name) // Swiss franc
+        fmt.Println(currency.Alpha3) // CHF
+        fmt.Println(currency.Numeric) // 756
+        fmt.Println(currency.MinorUnits) // 2
+        fmt.Println(currency.Countries()) // [LI CH]
     }
 
     currency = iso4217.GBP
+    fmt.Println(currency.Name) // Pound sterling
+    fmt.Println(currency.Numeric) // 826
+    fmt.Println(currency.MinorUnits) // 2
+    fmt.Println(currency.Countries()) // [GG IM JE GB]
+
+    // Working with inactive currencies
+    currency, ok = iso4217.LookupByAlpha3("DEM")
     if ok {
-      fmt.Println(currency.Name) // Pound sterling
-      fmt.Println(currency.Numeric) // 826
-      fmt.Println(currency.MinorUnits) // 2
-      fmt.Println(currency.Countries()) // [GG IM JE GB]
+        fmt.Println(currency.Name) // Deutsche Mark
+        fmt.Println(currency.IsActive()) // false
+        fmt.Println(currency.WithdrawalDate) // "2002-03"
     }
+
+    // Get all active currencies
+    activeCurrencies := iso4217.AllActive()
+    fmt.Printf("Number of active currencies: %d\n", len(activeCurrencies))
+
+    // Get all inactive currencies
+    inactiveCurrencies := iso4217.AllInactive()
+    fmt.Printf("Number of inactive currencies: %d\n", len(inactiveCurrencies))
 }
 ```
 
@@ -80,26 +97,43 @@ A currency has the following attributes:
 - `Name (string)`  
   The official name of the currency
 
+- `WithdrawalDate (string)`
+  The withdrawal date for inactive currencies (empty for active currencies)
+  The string can be in the format "YYYY-MM" or "{start} to {end}".
+  For active currencies, the string is "".
+
 - `Countries() []string`  
   Returns a list of ISO 3166-1 alpha-2 country codes where the currency is used
 
+- `IsActive() bool`
+  Returns true if the currency is currently active (not withdrawn)
+
 # Get Currency
 
-- `LookupByCode(code string) (Currency, bool)`  
+- `LookupByAlpha3(code string) (Currency, bool)`  
   Retrieves a currency by its ISO 4217 alphabetic (alpha-3) code, such as "USD" or "EUR".  
+  Searches both active and inactive currencies.
   Returns the corresponding currency and a boolean indicating whether the lookup was successful.
 
 - `LookupByNumeric(numeric int) (Currency, bool)`  
   Retrieves a currency using its ISO 4217 numeric code.  
+  Only searches active currencies as numeric codes may be reused.
   Returns the corresponding currency and a boolean indicating whether the lookup was successful.
 
 - `LookupByCountry(alpha2 string) (Currency, bool)`
   Retrieves a currency by a ISO 3166-1 country code (alpha2), such as "DE" or "US".
+  Only returns active currencies as country mappings are only maintained for active currencies.
   Returns the corresponding currency and a boolean indicating whether the lookup was successful.
 
 - `All() map[string]Currency`  
-  Returns a map containing all ISO 4217 currencies, where each key is the currency's alpha-3 code (e.g., "USD", "EUR").  
+  Returns a map containing all ISO 4217 currencies (both active and inactive), where each key is the currency's alpha-3 code (e.g., "USD", "EUR").  
   This allows easy iteration and access to the complete set of supported currencies.
+
+- `AllActive() map[string]Currency`  
+  Returns a map containing only active ISO 4217 currencies, where each key is the currency's alpha-3 code.
+
+- `AllInactive() map[string]Currency`  
+  Returns a map containing only inactive (withdrawn) ISO 4217 currencies, where each key is the currency's alpha-3 code.
 
 ## For Library Users
 
@@ -111,7 +145,7 @@ The currency list is based on the official ISO 4217 standard. To update the list
 
 1. Clone this repository
 2. Download the latest ISO 4217 data from the [official ISO website](https://www.iso.org/iso-4217-currency-codes.html)
-3. Replace the `tools/generate/iso4217-list.xml` file with the new data
+3. Replace the `tools/generate/iso4217_list_1.xml` and `tools/generate/iso4217_list_3.xml` files with the new data
 4. If necessary, replace the `tools/generate/iso_3166_1.csv` with the latest version
 5. Run the generator script to update the Go source files:
     ```sh

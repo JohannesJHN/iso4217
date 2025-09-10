@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type ISO4217 struct {
+type ISO4217Active struct {
 	CcyTbl struct {
 		Ccies []struct {
 			CtryNm     string `xml:"CtryNm"`
@@ -22,6 +22,18 @@ type ISO4217 struct {
 			} `xml:"CcyNm"`
 		} `xml:"CcyNtry"`
 	} `xml:"CcyTbl"`
+}
+
+type ISO4217Inactive struct {
+	HstrcCcyTbl struct {
+		Ccies []struct {
+			CtryNm     string `xml:"CtryNm"`
+			Ccy        string `xml:"Ccy"`
+			CcyNbr     string `xml:"CcyNbr"`
+			CcyNm      string `xml:"CcyNm"`
+			WthdrwlDt  string `xml:"WthdrwlDt"`
+		} `xml:"HstrcCcyNtry"`
+	} `xml:"HstrcCcyTbl"`
 }
 
 type ISO3166 struct {
@@ -69,14 +81,14 @@ func normalize(s string) string {
 
 func main() {
 	// parse ISO4217 XML
-	f, err := os.Open("tools/generate/iso4217-list.xml")
+	f, err := os.Open("tools/generate/iso4217_list_1.xml")
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
-	var data ISO4217
-	if err := xml.NewDecoder(f).Decode(&data); err != nil {
+	var activeData ISO4217Active
+	if err := xml.NewDecoder(f).Decode(&activeData); err != nil {
 		panic(err)
 	}
 
@@ -95,23 +107,35 @@ func main() {
 	// type definition
 	fmt.Fprintln(out, "package iso4217\n")
 	fmt.Fprintln(out, "type Currency struct {")
-	fmt.Fprintln(out, "\tAlpha3     string")
-	fmt.Fprintln(out, "\tNumeric    int")
-	fmt.Fprintln(out, "\tMinorUnits int")
-	fmt.Fprintln(out, "\tName       string")
+	fmt.Fprintln(out, "\tAlpha3        string")
+	fmt.Fprintln(out, "\tNumeric       int")
+	fmt.Fprintln(out, "\tMinorUnits    int")
+	fmt.Fprintln(out, "\tName          string")
+	fmt.Fprintln(out, "\tWithdrawalDate string // Empty for active currencies")
 	fmt.Fprintln(out, "}\n")
 
 	seen := map[string]bool{}
 
 	fmt.Fprintln(out, "var (")
-	var alpha3map strings.Builder
-	alpha3map.WriteString("var currenciesByAlpha3 = map[string]Currency{\n")
 	var numericMap strings.Builder
 	numericMap.WriteString("var currenciesByNumeric = map[int]Currency{\n")
+	numericSeen := make(map[int]bool)              // track numeric codes added to numeric map
 	countryMap := make(map[string]string)          // alpha2 -> currency
 	currencyCountries := make(map[string][]string) // currency -> []alpha2
 
-	for _, c := range data.CcyTbl.Ccies {
+	// Parse inactive currencies
+	f2, err := os.Open("tools/generate/iso4217_list_3.xml")
+	if err != nil {
+		panic(err)
+	}
+	defer f2.Close()
+
+	var inactiveData ISO4217Inactive
+	if err := xml.NewDecoder(f2).Decode(&inactiveData); err != nil {
+		panic(err)
+	}
+
+	for _, c := range activeData.CcyTbl.Ccies {
 		if c.Ccy == "" || c.CcyNbr == "" {
 			continue
 		}
@@ -127,11 +151,13 @@ func main() {
 				}
 			}
 
-			fmt.Fprintf(out, "\t%s = Currency{Alpha3: \"%s\", Numeric: %d, MinorUnits: %d, Name: %q}\n",
+			fmt.Fprintf(out, "\t%s = Currency{Alpha3: \"%s\", Numeric: %d, MinorUnits: %d, Name: %q, WithdrawalDate: \"\"}\n",
 				c.Ccy, c.Ccy, numeric, minor, c.CcyNm.Name)
 
-			alpha3map.WriteString(fmt.Sprintf("\t\"%s\": %s,\n", c.Ccy, c.Ccy))
-			numericMap.WriteString(fmt.Sprintf("\t%d: %s,\n", numeric, c.Ccy))
+			if !numericSeen[numeric] {
+				numericSeen[numeric] = true
+				numericMap.WriteString(fmt.Sprintf("\t%d: %s,\n", numeric, c.Ccy))
+			}
 		}
 
 		// map countries only if not a fund
@@ -144,10 +170,30 @@ func main() {
 			}
 		}
 	}
-	fmt.Fprintln(out, ")\n")
 
-	alpha3map.WriteString("}\n")
-	fmt.Fprintln(out, alpha3map.String())
+	// Process inactive currencies
+	for _, c := range inactiveData.HstrcCcyTbl.Ccies {
+		if c.Ccy == "" {
+			continue
+		}
+
+		// define inactive currencies (only if not already defined as active)
+		if !seen[c.Ccy] {
+			seen[c.Ccy] = true
+			numeric := 0
+			if c.CcyNbr != "" {
+				numeric, _ = strconv.Atoi(c.CcyNbr)
+			}
+			// Inactive currencies don't have minor units in the XML
+			minor := -1
+
+			fmt.Fprintf(out, "\t%s = Currency{Alpha3: \"%s\", Numeric: %d, MinorUnits: %d, Name: %q, WithdrawalDate: %q}\n",
+				c.Ccy, c.Ccy, numeric, minor, c.CcyNm, c.WthdrwlDt)
+
+			// Don't add inactive currencies to numeric map to avoid conflicts
+		}
+	}
+	fmt.Fprintln(out, ")\n")
 
 	numericMap.WriteString("}\n")
 	fmt.Fprintln(out, numericMap.String())
@@ -161,6 +207,32 @@ func main() {
 	fmt.Fprintln(out, "var countryList = map[Currency][]string{")
 	for cur, countries := range currencyCountries {
 		fmt.Fprintf(out, "\t%s: %#v,\n", cur, countries)
+	}
+	fmt.Fprintln(out, "}\n")
+
+	// Create separate maps for active and inactive currencies
+	activeCurrenciesSet := make(map[string]bool)
+	for _, c := range activeData.CcyTbl.Ccies {
+		if c.Ccy != "" {
+			activeCurrenciesSet[c.Ccy] = true
+		}
+	}
+
+	fmt.Fprintln(out, "var activeCurrencies = map[string]Currency{")
+	for currency := range activeCurrenciesSet {
+		fmt.Fprintf(out, "\t\"%s\": %s,\n", currency, currency)
+	}
+	fmt.Fprintln(out, "}\n")
+
+	fmt.Fprintln(out, "var inactiveCurrencies = map[string]Currency{")
+	inactiveCurrenciesSet := make(map[string]bool)
+	for _, c := range inactiveData.HstrcCcyTbl.Ccies {
+		if c.Ccy != "" && !activeCurrenciesSet[c.Ccy] {
+			inactiveCurrenciesSet[c.Ccy] = true
+		}
+	}
+	for currency := range inactiveCurrenciesSet {
+		fmt.Fprintf(out, "\t\"%s\": %s,\n", currency, currency)
 	}
 	fmt.Fprintln(out, "}\n")
 }
