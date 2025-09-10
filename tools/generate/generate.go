@@ -69,7 +69,7 @@ func normalize(s string) string {
 
 func main() {
 	// parse ISO4217 XML
-	f, err := os.Open("generate/iso4217-list.xml")
+	f, err := os.Open("tools/generate/iso4217-list.xml")
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +81,7 @@ func main() {
 	}
 
 	// parse ISO3166 CSV
-	iso3166, err := loadISO3166("generate/iso_3166_1.csv")
+	iso3166, err := loadISO3166("tools/generate/iso_3166_1.csv")
 	if err != nil {
 		panic(err)
 	}

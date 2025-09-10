@@ -101,16 +101,23 @@ A currency has the following attributes:
   Returns a map containing all ISO 4217 currencies, where each key is the currency's alpha-3 code (e.g., "USD", "EUR").  
   This allows easy iteration and access to the complete set of supported currencies.
 
-## Update Currency List
+## For Library Users
+
+This library is ready to use - just import it and start using the currency data. The `tools/` folder contains development utilities and can be ignored by end users.
+
+## For Contributors - Updating Currency Data
+
 The currency list is based on the official ISO 4217 standard. To update the list:
 
-1. Download the latest ISO 4217 data from the [official ISO website](https://www.iso.org/iso-4217-currency-codes.html).
-2. Replace the `generate/iso4217-list.xml` file in the repository with the new data.
-3. If necessary, replace the `generate/iso_3166_1.csv` with the latest version.
-4. Run the generator script to update the Go source files:
+1. Clone this repository
+2. Download the latest ISO 4217 data from the [official ISO website](https://www.iso.org/iso-4217-currency-codes.html)
+3. Replace the `tools/generate/iso4217-list.xml` file with the new data
+4. If necessary, replace the `tools/generate/iso_3166_1.csv` with the latest version
+5. Run the generator script to update the Go source files:
     ```sh
-    go run generate/generate.go
+    go run tools/generate/generate.go
     ```
+6. Submit a pull request with the updated `currencies.go`
 
 Contributions to keep the currency list up-to-date are welcome!
 
